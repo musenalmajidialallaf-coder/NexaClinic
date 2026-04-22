@@ -118,7 +118,7 @@ service cloud.firestore {
         )
       );
       
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isDoctor() && existing().created_by == request.auth.token.email);
     }
 
     match /patients/{patientId}/visits/{visitId} {
@@ -134,7 +134,7 @@ service cloud.firestore {
                     isValidVisit(incoming());
       
       allow update: if false; 
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isDoctor() && getPatient().created_by == request.auth.token.email);
     }
   }
 }

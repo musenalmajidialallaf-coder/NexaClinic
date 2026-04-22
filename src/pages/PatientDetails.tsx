@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, orderBy, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 import { Patient, Visit } from '../types';
 import { useAuth } from '../components/AuthProvider';
 import { useI18n } from '../components/I18nProvider';
-import { ArrowLeft, Plus, Calendar, FileText, Image as ImageIcon, FileAudio, Syringe, Activity, Phone, Home, Edit3, X, Check, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, FileText, Image as ImageIcon, FileAudio, Syringe, Activity, Phone, Home, Edit3, X, Check, AlertCircle, Trash2, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 
 // Utility for fast parallel uploads with timeout
@@ -180,6 +180,29 @@ export default function PatientDetails() {
 
   const age = calculateAge(patient?.date_of_birth);
 
+  const handleDeleteVisit = async (visitId: string) => {
+    if (!id || !window.confirm('هل أنت متأكد من حذف هذا السجل الطبي؟ لا يمكن استعادة السجل بعد حذفه.')) return;
+    try {
+      const visitRef = doc(db, 'patients', id, 'visits', visitId);
+      await deleteDoc(visitRef);
+      setVisits((prevVisits) => prevVisits.filter((v) => v.id !== visitId));
+    } catch (err) {
+      console.error('Error deleting visit:', err);
+      alert('فشل في حذف السجل. يرجى التأكد من صلاحيات النظام.');
+    }
+  };
+
+  const handleDeletePatient = async () => {
+    if (!id || !patient || !window.confirm(`هل أنت متأكد من حذف المريض (${patient.full_name}) تماماً؟ سيتم حذف كافة السجلات والزيارات التابعة له ولا يمكن التراجع.`)) return;
+    try {
+      await deleteDoc(doc(db, 'patients', id));
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('فشل في حذف المريض. تأكد من الصلاحيات.');
+    }
+  };
+
   if (loading) return <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1E88E5]"></div></div>;
   if (!patient) return <div className="text-center py-20 text-slate-500">Patient not found.</div>;
 
@@ -208,12 +231,21 @@ export default function PatientDetails() {
               </div>
             </div>
           </div>
-          <button 
-            onClick={() => { setIsVisitModalOpen(true); setSubmitError(null); }}
-            className="bg-[#1E88E5] text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 text-sm whitespace-nowrap"
-          >
-            <Plus className="h-4 w-4" /> {t('add_visit')}
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => { setIsVisitModalOpen(true); setSubmitError(null); }}
+              className="bg-[#1E88E5] text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 text-sm whitespace-nowrap"
+            >
+              <Plus className="h-4 w-4" /> {t('add_visit')}
+            </button>
+            <button 
+              onClick={handleDeletePatient}
+              className="p-2.5 text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl transition-all"
+              title="حذف المريض نهائياً"
+            >
+              <Trash2 className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -372,8 +404,17 @@ export default function PatientDetails() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <div className="text-[10px] font-bold bg-[#E3F2FD] dark:bg-blue-900/40 text-[#1976D2] dark:text-blue-300 px-3 py-1 rounded-full uppercase tracking-widest border border-[#BBDEFB] dark:border-blue-800 inline-block">
-                      {visit.diagnosis}
+                    <div className="flex items-center gap-2">
+                       <div className="text-[10px] font-bold bg-[#E3F2FD] dark:bg-blue-900/40 text-[#1976D2] dark:text-blue-300 px-3 py-1 rounded-full uppercase tracking-widest border border-[#BBDEFB] dark:border-blue-800 inline-block">
+                         {visit.diagnosis}
+                       </div>
+                       <button 
+                         onClick={() => handleDeleteVisit(visit.id)}
+                         className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                         title="حذف الزيارة"
+                       >
+                         <Trash2 className="h-3.5 w-3.5" />
+                       </button>
                     </div>
                     {visit.next_followup_date && (
                        <div className="text-[11px] font-medium text-orange-600 dark:text-orange-300 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-md border border-orange-200 dark:border-orange-800/50 whitespace-nowrap">
@@ -384,7 +425,17 @@ export default function PatientDetails() {
                 </div>
 
                 <div className="mt-4 text-[#0D47A1]/80 dark:text-blue-100/80 text-[14px] leading-relaxed mb-4 p-4 bg-white/40 dark:bg-slate-900/40 rounded-[16px] border border-white/30 dark:border-white/5 space-y-4">
-                  <p className="whitespace-pre-wrap">{visit.notes}</p>
+                  <div>
+                    <h5 className="text-[11px] font-bold text-[#1565C0]/60 dark:text-blue-300/60 uppercase mb-2 flex items-center gap-1"><FileText className="h-3 w-3"/> Notes</h5>
+                    <p className="whitespace-pre-wrap">{visit.notes}</p>
+                  </div>
+                  
+                  {visit.actions && (
+                    <div className="pt-3 border-t border-white/20 dark:border-white/5">
+                      <h5 className="text-[11px] font-bold text-[#1565C0]/60 dark:text-blue-300/60 uppercase mb-2 flex items-center gap-1"><ClipboardList className="h-3 w-3"/> Procedures & Actions</h5>
+                      <p className="text-[#1E88E5] dark:text-blue-300 font-medium whitespace-pre-wrap">{visit.actions}</p>
+                    </div>
+                  )}
                   
                   {visit.note_images && visit.note_images.length > 0 && (
                      <div className="flex flex-wrap gap-3 pt-3 border-t border-white/30 dark:border-slate-700/50">
@@ -510,6 +561,7 @@ export default function PatientDetails() {
                   const formData = new FormData(e.currentTarget);
                   const diagnosis = formData.get('diagnosis') as string;
                   const notes = formData.get('notes') as string;
+                  const actions = formData.get('actions') as string;
                   const next_followup_date = formData.get('next_followup_date') as string;
 
                   try {
@@ -533,6 +585,7 @@ export default function PatientDetails() {
                       visit_date: now,
                       diagnosis,
                       notes,
+                      actions,
                       clinical_images,
                       lab_images,
                       audio_records,
@@ -581,7 +634,12 @@ export default function PatientDetails() {
 
                    <div>
                      <label className="block text-[13px] font-medium text-[#1565C0] dark:text-blue-200 mb-2 uppercase tracking-wide">{t('clinical_notes')}</label>
-                     <textarea name="notes" required rows={4} placeholder="Detailed doctor notes..." className="w-full rounded-xl bg-white/60 dark:bg-slate-800/50 border border-white/50 dark:border-slate-600 text-[#0D47A1] dark:text-white focus:ring-2 focus:ring-[#1E88E5]/50 focus:bg-white/80 dark:focus:bg-slate-700 transition-all outline-none py-2.5 px-4 resize-none"></textarea>
+                     <textarea name="notes" required rows={3} placeholder="Detailed doctor notes..." className="w-full rounded-xl bg-white/60 dark:bg-slate-800/50 border border-white/50 dark:border-slate-600 text-[#0D47A1] dark:text-white focus:ring-2 focus:ring-[#1E88E5]/50 focus:bg-white/80 dark:focus:bg-slate-700 transition-all outline-none py-2.5 px-4 resize-none"></textarea>
+                   </div>
+
+                   <div>
+                     <label className="block text-[13px] font-medium text-[#1E88E5] dark:text-blue-300 mb-2 uppercase tracking-wide">Medical Actions & Procedures</label>
+                     <textarea name="actions" rows={2} placeholder="Treatments, procedures, or specific actions taken..." className="w-full rounded-xl bg-blue-50/50 dark:bg-slate-800/80 border border-[#1E88E5]/30 dark:border-slate-600 text-[#0D47A1] dark:text-white focus:ring-2 focus:ring-[#1E88E5]/50 focus:bg-white/80 dark:focus:bg-slate-700 transition-all outline-none py-2.5 px-4 resize-none"></textarea>
                      
                      <div className="mt-3">
                         <label className="flex items-center gap-2 text-[12px] font-semibold text-[#1565C0] dark:text-blue-200 mb-1.5 uppercase tracking-wide cursor-pointer">

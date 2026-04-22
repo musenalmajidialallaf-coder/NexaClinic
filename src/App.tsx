@@ -40,9 +40,9 @@ function ProtectedRoute({
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-4 sm:p-5 gap-5">
+    <div className="flex-1 flex flex-col p-4 sm:p-5 gap-5 w-full">
       <Navbar />
-      <main className="flex-1 w-full max-w-7xl mx-auto">{children}</main>
+      <main className="flex-1 w-full max-w-7xl mx-auto flex flex-col">{children}</main>
     </div>
   );
 }

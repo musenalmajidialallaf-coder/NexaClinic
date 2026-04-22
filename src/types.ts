@@ -22,6 +22,7 @@ export interface Visit {
   visit_date: number;
   diagnosis: string;
   notes: string;
+  actions?: string; // New: Medical actions/procedures taken
   clinical_images: string[];
   lab_images: string[];
   audio_records: string[];

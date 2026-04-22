@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, orderBy, addDoc, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, addDoc, where, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db, storage } from '../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Patient } from '../types';
 import { Link } from 'react-router-dom';
-import { Users, Search, Plus, Calendar, Phone, X, Star, FileText, AlertCircle } from 'lucide-react';
+import { Users, Search, Plus, Calendar, Phone, X, Star, FileText, AlertCircle, MoreVertical, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../components/AuthProvider';
 import { useI18n } from '../components/I18nProvider';
@@ -165,6 +165,19 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeletePatient = async (e: React.MouseEvent, patientId: string, name: string) => {
+    e.preventDefault();
+    if (!window.confirm(`هل أنت متأكد من حذف المريض (${name}) تماماً؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+    
+    try {
+      await deleteDoc(doc(db, 'patients', patientId));
+      setPatients(patients.filter(p => p.id !== patientId));
+    } catch (err) {
+      console.error('Error deleting patient', err);
+      alert('خطأ أثناء الحذف. ربما لا تملك الصلاحية الكافية.');
+    }
+  };
+
   const filteredPatients = patients.filter(
     (p) =>
       (filterParams === 'all' || p.is_favorite) &&
@@ -248,6 +261,16 @@ export default function Dashboard() {
                     <Calendar className="h-3.5 w-3.5" />
                     <span className="text-[13px]">Last Visit: {patient.last_visit_date ? format(patient.last_visit_date, 'MMM d, yyyy') : 'None'}</span>
                   </div>
+                </div>
+                
+                <div className="flex items-center gap-2 border-l border-white/20 dark:border-white/10 pl-4 ml-1">
+                   <button 
+                     onClick={(e) => handleDeletePatient(e, patient.id, patient.full_name)}
+                     className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                     title={t('delete')}
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </button>
                 </div>
               </div>
             </Link>
