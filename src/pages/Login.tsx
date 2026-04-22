@@ -26,12 +26,12 @@ export default function Login() {
       <div className="max-w-md w-full bg-white/35 dark:bg-slate-900/30 backdrop-blur-[15px] border border-white/30 dark:border-white/10 rounded-[24px] shadow-2xl overflow-hidden p-[2px]">
         <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-[10px] rounded-[22px] p-8">
           <div className="flex justify-center mb-6">
-            <div className="h-16 w-16 bg-white/60 dark:bg-slate-800/60 border border-white/50 dark:border-white/10 rounded-2xl flex items-center justify-center shadow-sm">
-              <Activity className="h-8 w-8 text-[#1E88E5] dark:text-blue-400" />
+            <div className="h-16 w-16 bg-gradient-to-br from-[#1E88E5] to-[#1565C0] rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/20">
+              <span className="font-black text-xl text-white tracking-tighter">NC</span>
             </div>
           </div>
           <h2 className="text-center text-[22px] font-bold text-[#0D47A1] dark:text-blue-100 mb-2 tracking-tight">
-            Welcome to MedPulse
+            Welcome to NexaClinic
           </h2>
           <p className="text-center text-[#1565C0]/80 dark:text-blue-200/80 mb-8 text-[15px]">
             Healthcare Portal Secure Access

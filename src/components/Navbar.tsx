@@ -22,11 +22,11 @@ export default function Navbar() {
     <nav className="w-full max-w-7xl mx-auto bg-white/40 dark:bg-slate-900/40 backdrop-blur-[15px] border border-white/30 dark:border-white/10 rounded-[20px] flex items-center px-6 h-[60px] justify-between shadow-sm sticky top-0 z-50">
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-white/50 dark:bg-white/10 flex items-center justify-center text-[#1565C0] dark:text-[#64B5F6]">
-            <Activity className="h-6 w-6 font-bold" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1E88E5] to-[#1565C0] flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+            <span className="font-black text-xs tracking-tighter">NC</span>
           </div>
           <span className="font-bold text-lg tracking-tight text-[#0D47A1] dark:text-blue-100 hidden sm:block">
-            MedPulse
+            NexaClinic
           </span>
         </Link>
         <div className="flex items-center space-x-2">
