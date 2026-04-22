@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+body {
+  @apply bg-[#E3F2FD] font-sans antialiased text-[#0D47A1] transition-colors duration-200 dark:text-blue-100 dark:bg-slate-900;
+  background-image: radial-gradient(at 0% 0%, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+  background-attachment: fixed;
+}
+
+.dark body {
+  background-image: radial-gradient(at 0% 0%, #0F172A 0%, #1E293B 50%, #020617 100%);
+}

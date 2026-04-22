@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "Doctor": {
+      "title": "Doctor",
+      "description": "Represents a doctor or administrator with access to the system.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address of the doctor."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "doctor"],
+          "description": "The role of the user (admin or doctor)."
+        }
+      },
+      "required": ["email", "role"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "description": "Represents a medical patient in the system.",
+      "type": "object",
+      "properties": {
+        "full_name": {
+          "type": "string",
+          "description": "The full name of the patient."
+        },
+        "phone_number": {
+          "type": "string",
+          "description": "The phone number of the patient."
+        },
+        "address": {
+          "type": "string",
+          "description": "The residential address of the patient."
+        },
+        "medical_history": {
+          "type": "string",
+          "description": "A summary of the patient's medical history."
+        },
+        "date_of_birth": {
+          "type": "string",
+          "format": "date",
+          "description": "The patient's date of birth."
+        },
+        "is_favorite": {
+          "type": "boolean",
+          "description": "Flag indicating if the patient is marked as a favorite."
+        },
+        "created_at": {
+          "type": "number",
+          "description": "The timestamp when the patient was registered."
+        },
+        "last_visit_date": {
+          "type": "number",
+          "description": "The timestamp of the patient's last visit."
+        },
+        "created_by": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the doctor who registered the patient."
+        },
+        "history_images": {
+          "type": "array",
+          "description": "URLs to images related to the patient's medical history.",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["full_name", "phone_number", "address", "medical_history", "created_at", "created_by"]
+    },
+    "Visit": {
+      "title": "Visit",
+      "description": "Represents a specific medical visit for a patient.",
+      "type": "object",
+      "properties": {
+        "visit_date": {
+          "type": "number",
+          "description": "The timestamp of the visit."
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "The diagnosis or reason for the visit."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Detailed clinical notes from the visit."
+        },
+        "clinical_images": {
+          "type": "array",
+          "description": "URLs to clinical images taken during the visit.",
+          "items": { "type": "string" }
+        },
+        "lab_images": {
+          "type": "array",
+          "description": "URLs to lab result images provided during the visit.",
+          "items": { "type": "string" }
+        },
+        "audio_records": {
+          "type": "array",
+          "description": "URLs to audio recordings taken during the visit.",
+          "items": { "type": "string" }
+        },
+        "note_images": {
+          "type": "array",
+          "description": "URLs to images of physical notes.",
+          "items": { "type": "string" }
+        },
+        "prescription_image": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the prescription image."
+        },
+        "next_followup_date": {
+          "type": "string",
+          "format": "date",
+          "description": "The date for the next follow-up visit."
+        },
+        "created_by": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the doctor who recorded the visit."
+        }
+      },
+      "required": ["visit_date", "diagnosis", "notes", "created_by"]
+    }
+  },
+  "firestore": {
+    "/doctors/{email}": {
+      "schema": "Doctor",
+      "description": "Collection of authorized doctors and administrators."
+    },
+    "/patients/{patientId}": {
+      "schema": "Patient",
+      "description": "Collection of patients."
+    },
+    "/patients/{patientId}/visits/{visitId}": {
+      "schema": "Visit",
+      "description": "Subcollection of visits for a specific patient."
+    }
+  }
+}

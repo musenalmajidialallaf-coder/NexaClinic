@@ -1,0 +1,140 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-\\.\\@]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'musen.almajidi.alallaf@gmail.com' ||
+        get(/databases/$(database)/documents/doctors/$(request.auth.token.email)).data.role == 'admin'
+      );
+    }
+
+    function isDoctor() {
+      return isSignedIn() && (
+        request.auth.token.email == 'musen.almajidi.alallaf@gmail.com' ||
+        exists(/databases/$(database)/documents/doctors/$(request.auth.token.email))
+      );
+    }
+
+    function isValidArray(arr, max) {
+      return arr is list && arr.size() <= max && (arr.size() == 0 || arr[0] is string);
+    }
+
+    // --- Entity Validations ---
+
+    function isValidDoctor(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.keys().size() == 2 &&
+             data.email is string && data.email.size() <= 256 &&
+             data.role is string && (data.role == 'admin' || data.role == 'doctor');
+    }
+
+    function isValidPatient(data) {
+      let required = ['full_name', 'phone_number', 'address', 'medical_history', 'created_at', 'created_by'];
+      return data.keys().hasAll(required) &&
+             data.full_name is string && data.full_name.size() <= 256 &&
+             data.phone_number is string && data.phone_number.size() <= 50 &&
+             data.address is string && data.address.size() <= 500 &&
+             data.medical_history is string && data.medical_history.size() <= 50000 &&
+             data.created_at is number &&
+             data.created_by is string && data.created_by == request.auth.token.email &&
+             (!data.keys().hasAny(['date_of_birth']) || data.date_of_birth is string || data.date_of_birth == null) &&
+             (!data.keys().hasAny(['is_favorite']) || data.is_favorite is bool) &&
+             (!data.keys().hasAny(['last_visit_date']) || data.last_visit_date is number) &&
+             (!data.keys().hasAny(['history_images']) || isValidArray(data.history_images, 50));
+    }
+
+    function isValidVisit(data) {
+      let required = ['visit_date', 'diagnosis', 'notes', 'clinical_images', 'lab_images', 'audio_records', 'prescription_image', 'created_by'];
+      return data.keys().hasAll(required) &&
+             data.visit_date is number &&
+             data.diagnosis is string && data.diagnosis.size() <= 500 &&
+             data.notes is string && data.notes.size() <= 50000 &&
+             data.created_by is string && data.created_by == request.auth.token.email &&
+             isValidArray(data.clinical_images, 50) &&
+             isValidArray(data.lab_images, 50) &&
+             isValidArray(data.audio_records, 20) &&
+             (data.prescription_image == null || data.prescription_image is string) &&
+             (!data.keys().hasAny(['next_followup_date']) || data.next_followup_date == null || data.next_followup_date is string) &&
+             (!data.keys().hasAny(['note_images']) || isValidArray(data.note_images, 50));
+    }
+
+    // --- Collection Routes ---
+
+    match /doctors/{doctorId} {
+      allow get: if isSignedIn() && (request.auth.token.email == doctorId || isAdmin());
+      allow list: if isAdmin();
+      
+      allow create: if isAdmin() && isValidId(doctorId) && isValidDoctor(incoming()) && incoming().email == doctorId;
+      
+      allow update: if isAdmin() && (
+        isValidDoctor(incoming()) && 
+        incoming().email == existing().email && 
+        incoming().diff(existing()).affectedKeys().hasOnly(['role'])
+      );
+      
+      allow delete: if isAdmin() && request.auth.token.email != doctorId;
+    }
+
+    match /patients/{patientId} {
+      allow get: if isDoctor() && (isAdmin() || existing().created_by == request.auth.token.email);
+      allow list: if isDoctor() && (isAdmin() || resource.data.created_by == request.auth.token.email);
+      
+      allow create: if isDoctor() && isValidId(patientId) && isValidPatient(incoming());
+      
+      allow update: if isDoctor() && (
+        (isAdmin() || existing().created_by == request.auth.token.email) &&
+        isValidPatient(incoming()) &&
+        incoming().created_by == existing().created_by &&
+        incoming().created_at == existing().created_at &&
+        (
+          // Action: Update Info
+          incoming().diff(existing()).affectedKeys().hasOnly(['full_name', 'phone_number', 'address', 'medical_history', 'date_of_birth', 'history_images', 'last_visit_date']) ||
+          // Action: Toggle Favorite
+          incoming().diff(existing()).affectedKeys().hasOnly(['is_favorite'])
+        )
+      );
+      
+      allow delete: if isAdmin();
+    }
+
+    match /patients/{patientId}/visits/{visitId} {
+      function getPatient() {
+        return get(/databases/$(database)/documents/patients/$(patientId)).data;
+      }
+
+      allow get: if isDoctor() && (isAdmin() || getPatient().created_by == request.auth.token.email);
+      allow list: if isDoctor() && (isAdmin() || getPatient().created_by == request.auth.token.email);
+      
+      allow create: if isDoctor() && isValidId(patientId) && isValidId(visitId) &&
+                    (isAdmin() || getPatient().created_by == request.auth.token.email) &&
+                    isValidVisit(incoming());
+      
+      allow update: if false; 
+      allow delete: if isAdmin();
+    }
+  }
+}
