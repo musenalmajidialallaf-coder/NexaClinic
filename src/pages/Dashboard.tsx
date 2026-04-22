@@ -154,7 +154,8 @@ export default function Dashboard() {
   };
 
   const toggleFavorite = async (e: React.MouseEvent, patientId: string, currentFav: boolean) => {
-    e.preventDefault(); // Prevent link navigation
+    e.preventDefault();
+    e.stopPropagation(); // منع الانتقال لصفحة المريض
     try {
       await updateDoc(doc(db, 'patients', patientId), {
         is_favorite: !currentFav
@@ -167,6 +168,7 @@ export default function Dashboard() {
 
   const handleDeletePatient = async (e: React.MouseEvent, patientId: string, name: string) => {
     e.preventDefault();
+    e.stopPropagation(); // منع الانتقال لصفحة المريض
     if (!window.confirm(`هل أنت متأكد من حذف المريض (${name}) تماماً؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
     
     try {
@@ -191,12 +193,14 @@ export default function Dashboard() {
           <h1 className="text-[18px] font-semibold text-[#0D47A1] dark:text-blue-100 m-0">{t('patients')}</h1>
           <div className="flex bg-white/50 dark:bg-slate-800/50 rounded-xl p-1 border border-white/40 dark:border-slate-700">
             <button
+              type="button"
               onClick={() => setFilterParams('all')}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${filterParams === 'all' ? 'bg-[#1E88E5] text-white shadow-sm' : 'text-[#1565C0] dark:text-blue-200 hover:bg-white/40 dark:hover:bg-slate-700'}`}
             >
               {t('all_patients')}
             </button>
             <button
+              type="button"
               onClick={() => setFilterParams('favorites')}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${filterParams === 'favorites' ? 'bg-[#FFD54F] text-[#7F5F00] shadow-sm' : 'text-[#1565C0] dark:text-blue-200 hover:bg-white/40 dark:hover:bg-slate-700'}`}
             >
@@ -216,6 +220,7 @@ export default function Dashboard() {
             />
           </div>
           <button 
+            type="button"
             onClick={() => { setIsModalOpen(true); setSubmitError(null); }} 
             className="text-[#1E88E5] dark:text-blue-400 text-2xl font-bold hover:scale-110 active:scale-95 transition-transform flex items-center justify-center h-8 w-8 rounded-full hover:bg-white/50 dark:hover:bg-white/10"
             title={t('add_patient')}
@@ -237,6 +242,7 @@ export default function Dashboard() {
             >
               <div className="flex items-center gap-3">
                 <button 
+                  type="button"
                   onClick={(e) => toggleFavorite(e, patient.id, !!patient.is_favorite)}
                   className={`p-1 rounded-full transition-colors ${patient.is_favorite ? 'text-yellow-400 hover:bg-yellow-400/20' : 'text-slate-300 dark:text-slate-600 hover:text-yellow-400 hover:bg-yellow-400/10'}`}
                 >
@@ -263,13 +269,14 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 border-l border-white/20 dark:border-white/10 pl-4 ml-1">
+                <div className="flex items-center gap-2 border-r border-white/20 dark:border-white/10 pr-4 mr-1">
                    <button 
+                     type="button"
                      onClick={(e) => handleDeletePatient(e, patient.id, patient.full_name)}
-                     className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                     className="p-2.5 text-red-500 hover:text-white hover:bg-red-500 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-xl transition-all hover:scale-110 active:scale-95 shadow-sm"
                      title={t('delete')}
                    >
-                     <Trash2 className="h-4 w-4" />
+                     <Trash2 className="h-5 w-5" />
                    </button>
                 </div>
               </div>

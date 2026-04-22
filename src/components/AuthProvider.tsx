@@ -41,7 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-          if (currentUser.email === "musen.almajidi.alallaf@gmail.com") {
+          if (currentUser.email === "musen.almajidi.alallaf@gmail.com" || 
+              currentUser.email === "muhsen.hm292@student.uomosul.edu.iq") {
             setRole("admin");
             setUser(currentUser);
           } else {

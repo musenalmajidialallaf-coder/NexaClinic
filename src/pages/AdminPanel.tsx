@@ -193,9 +193,10 @@ export default function AdminPanel() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => handleRemoveDoctor(doc.email)}
                 disabled={doc.email === user?.email}
-                className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50/50 dark:hover:bg-red-900/30 rounded-xl transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-3 text-red-500 hover:text-white hover:bg-red-500 bg-red-500/5 dark:bg-red-500/10 border border-red-500/10 rounded-xl transition-all hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm"
                 title="Revoke Access"
               >
                 <Trash2 className="h-5 w-5" />

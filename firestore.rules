@@ -10,7 +10,7 @@ service cloud.firestore {
     // --- Helpers ---
 
     function isSignedIn() {
-      return request.auth != null && request.auth.token.email_verified == true;
+      return request.auth != null;
     }
 
     function isValidId(id) {
@@ -27,15 +27,17 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == 'musen.almajidi.alallaf@gmail.com' ||
-        get(/databases/$(database)/documents/doctors/$(request.auth.token.email)).data.role == 'admin'
+        request.auth.token.email.lower() == 'musen.almajidi.alallaf@gmail.com' ||
+        request.auth.token.email.lower() == 'muhsen.hm292@student.uomosul.edu.iq' ||
+        get(/databases/$(database)/documents/doctors/$(request.auth.token.email.lower())).data.role == 'admin'
       );
     }
 
     function isDoctor() {
       return isSignedIn() && (
-        request.auth.token.email == 'musen.almajidi.alallaf@gmail.com' ||
-        exists(/databases/$(database)/documents/doctors/$(request.auth.token.email))
+        request.auth.token.email.lower() == 'musen.almajidi.alallaf@gmail.com' ||
+        request.auth.token.email.lower() == 'muhsen.hm292@student.uomosul.edu.iq' ||
+        exists(/databases/$(database)/documents/doctors/$(request.auth.token.email.lower()))
       );
     }
 

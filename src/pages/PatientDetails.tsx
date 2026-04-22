@@ -233,14 +233,16 @@ export default function PatientDetails() {
           </div>
           <div className="flex items-center gap-2">
             <button 
+              type="button"
               onClick={() => { setIsVisitModalOpen(true); setSubmitError(null); }}
               className="bg-[#1E88E5] text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 text-sm whitespace-nowrap"
             >
               <Plus className="h-4 w-4" /> {t('add_visit')}
             </button>
             <button 
+              type="button"
               onClick={handleDeletePatient}
-              className="p-2.5 text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 rounded-xl transition-all"
+              className="p-3 text-red-500 hover:text-white hover:bg-red-500 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-xl transition-all hover:scale-110 active:scale-95 shadow-md"
               title="حذف المريض نهائياً"
             >
               <Trash2 className="h-5 w-5" />
@@ -251,18 +253,21 @@ export default function PatientDetails() {
         {/* Tabs */}
         <div className="flex px-6 pt-2 pb-0 gap-6 border-b border-white/20 dark:border-white/10 bg-white/20 dark:bg-slate-800/30 overflow-x-auto">
           <button 
+            type="button"
             onClick={() => { setActiveTab('info'); setIsEditing(false); }}
             className={`pb-3 pt-2 text-[14px] transition-colors border-b-2 uppercase tracking-wide whitespace-nowrap ${activeTab === 'info' ? 'border-[#1E88E5] text-[#0D47A1] dark:text-blue-100 font-bold' : 'border-transparent text-[#1565C0]/60 dark:text-blue-200/60 hover:text-[#1565C0] dark:hover:text-blue-200 font-medium'}`}
           >
             {t('info')}
           </button>
           <button 
+            type="button"
             onClick={() => { setActiveTab('history'); setIsEditing(false); }}
             className={`pb-3 pt-2 text-[14px] transition-colors border-b-2 uppercase tracking-wide whitespace-nowrap ${activeTab === 'history' ? 'border-[#1E88E5] text-[#0D47A1] dark:text-blue-100 font-bold' : 'border-transparent text-[#1565C0]/60 dark:text-blue-200/60 hover:text-[#1565C0] dark:hover:text-blue-200 font-medium'}`}
           >
             {t('history')}
           </button>
           <button 
+            type="button"
             onClick={() => setActiveTab('visits')}
             className={`pb-3 pt-2 text-[14px] transition-colors border-b-2 uppercase tracking-wide flex items-center gap-2 whitespace-nowrap ${activeTab === 'visits' ? 'border-[#1E88E5] text-[#0D47A1] dark:text-blue-100 font-bold' : 'border-transparent text-[#1565C0]/60 dark:text-blue-200/60 hover:text-[#1565C0] dark:hover:text-blue-200 font-medium'}`}
           >
@@ -409,11 +414,12 @@ export default function PatientDetails() {
                          {visit.diagnosis}
                        </div>
                        <button 
+                         type="button"
                          onClick={() => handleDeleteVisit(visit.id)}
-                         className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                         className="p-2 text-red-500 hover:text-white hover:bg-red-500 bg-red-500/5 dark:bg-red-500/10 border border-red-500/10 rounded-xl transition-all hover:scale-110 active:scale-95"
                          title="حذف الزيارة"
                        >
-                         <Trash2 className="h-3.5 w-3.5" />
+                         <Trash2 className="h-4 w-4" />
                        </button>
                     </div>
                     {visit.next_followup_date && (

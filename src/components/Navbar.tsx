@@ -58,6 +58,7 @@ export default function Navbar() {
       </div>
       <div className="flex items-center gap-3">
         <button
+          type="button"
           onClick={() => setDarkMode(!darkMode)}
           className="p-1.5 rounded-lg text-[#1565C0] dark:text-blue-200 hover:bg-white/50 dark:hover:bg-white/10 transition-colors"
           title="Toggle Theme"
@@ -69,6 +70,7 @@ export default function Navbar() {
           )}
         </button>
         <button
+          type="button"
           onClick={toggleLang}
           className="p-1.5 rounded-lg text-[#1565C0] dark:text-blue-200 hover:bg-white/50 dark:hover:bg-white/10 transition-colors font-semibold text-xs tracking-wide flex items-center gap-1"
         >
@@ -89,6 +91,7 @@ export default function Navbar() {
           {user?.displayName?.charAt(0).toUpperCase() || "D"}
         </div>
         <button
+          type="button"
           onClick={logOut}
           className="p-1.5 rounded-lg text-[#1565C0] dark:text-blue-200 hover:text-red-600 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-white/10 transition-colors ml-1"
           title={t("logout")}
