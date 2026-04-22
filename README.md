@@ -1,6 +1,11 @@
 # NexaClinic - Cloud-Based Medical Management System
 
+[![Live Demo](https://img.shields.io/badge/demo-live%20preview-blue?style=for-the-badge&logo=google-cloud)](https://ais-pre-pb6pefjvxzchs7ckzj5uw6-262928967633.europe-west3.run.app)
+
 NexaClinic is a professional, high-performance medical practice management application designed for doctors and clinics. It provides secure patient records, visit history, clinical image management, and administrative oversight.
+
+## 🔗 Live Link
+**You can preview the application here:** [https://ais-pre-pb6pefjvxzchs7ckzj5uw6-262928967633.europe-west3.run.app](https://ais-pre-pb6pefjvxzchs7ckzj5uw6-262928967633.europe-west3.run.app)
 
 ## 🚀 Features
 
