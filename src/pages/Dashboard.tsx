@@ -85,11 +85,11 @@ export default function Dashboard() {
     if (!user?.email) return;
     try {
       let q;
-      // Admin sees all, doctor sees only theirs
+      // Admin sees everything, Doctors see ONLY their own patients
       if (role === 'admin') {
-        q = query(collection(db, 'patients'), orderBy('last_visit_date', 'desc'), orderBy('created_at', 'desc'));
+        q = query(collection(db, 'patients'), orderBy('last_visit_date', 'desc'));
       } else {
-        q = query(collection(db, 'patients'), where('created_by', '==', user.email));
+        q = query(collection(db, 'patients'), where('created_by', '==', user.email.toLowerCase()), orderBy('last_visit_date', 'desc'));
       }
       const snapshot = await getDocs(q);
       const docs = snapshot.docs.map(doc => ({
@@ -134,7 +134,7 @@ export default function Dashboard() {
         is_favorite: false,
         created_at: now,
         last_visit_date: now,
-        created_by: user.email,
+        created_by: user.email.toLowerCase(),
         history_images: historyUrls
       });
       setIsModalOpen(false);

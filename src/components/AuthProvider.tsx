@@ -41,12 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-          if (currentUser.email === "musen.almajidi.alallaf@gmail.com" || 
-              currentUser.email === "muhsen.hm292@student.uomosul.edu.iq") {
+          const emailLower = currentUser.email.toLowerCase();
+          if (emailLower === "musen.almajidi.alallaf@gmail.com" || 
+              emailLower === "muhsen.hm292@student.uomosul.edu.iq") {
             setRole("admin");
             setUser(currentUser);
           } else {
-            const docRef = doc(db, "doctors", currentUser.email);
+            const docRef = doc(db, "doctors", emailLower);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {

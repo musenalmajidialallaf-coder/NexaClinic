@@ -29,7 +29,8 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email.lower() == 'musen.almajidi.alallaf@gmail.com' ||
         request.auth.token.email.lower() == 'muhsen.hm292@student.uomosul.edu.iq' ||
-        get(/databases/$(database)/documents/doctors/$(request.auth.token.email.lower())).data.role == 'admin'
+        (exists(/databases/$(database)/documents/doctors/$(request.auth.token.email.lower())) && 
+         get(/databases/$(database)/documents/doctors/$(request.auth.token.email.lower())).data.role == 'admin')
       );
     }
 
@@ -62,7 +63,7 @@ service cloud.firestore {
              data.address is string && data.address.size() <= 500 &&
              data.medical_history is string && data.medical_history.size() <= 50000 &&
              data.created_at is number &&
-             data.created_by is string && data.created_by == request.auth.token.email &&
+             data.created_by is string &&
              (!data.keys().hasAny(['date_of_birth']) || data.date_of_birth is string || data.date_of_birth == null) &&
              (!data.keys().hasAny(['is_favorite']) || data.is_favorite is bool) &&
              (!data.keys().hasAny(['last_visit_date']) || data.last_visit_date is number) &&
@@ -75,7 +76,7 @@ service cloud.firestore {
              data.visit_date is number &&
              data.diagnosis is string && data.diagnosis.size() <= 500 &&
              data.notes is string && data.notes.size() <= 50000 &&
-             data.created_by is string && data.created_by == request.auth.token.email &&
+             data.created_by is string &&
              isValidArray(data.clinical_images, 50) &&
              isValidArray(data.lab_images, 50) &&
              isValidArray(data.audio_records, 20) &&
@@ -87,30 +88,31 @@ service cloud.firestore {
     // --- Collection Routes ---
 
     match /doctors/{doctorId} {
-      allow get: if isSignedIn() && (request.auth.token.email == doctorId || isAdmin());
+      allow get: if isSignedIn() && (request.auth.token.email.lower() == doctorId.lower() || isAdmin());
       allow list: if isAdmin();
       
-      allow create: if isAdmin() && isValidId(doctorId) && isValidDoctor(incoming()) && incoming().email == doctorId;
+      allow create: if isAdmin() && isValidId(doctorId) && isValidDoctor(incoming()) && incoming().email.lower() == doctorId.lower();
       
       allow update: if isAdmin() && (
         isValidDoctor(incoming()) && 
-        incoming().email == existing().email && 
+        incoming().email.lower() == existing().email.lower() && 
         incoming().diff(existing()).affectedKeys().hasOnly(['role'])
       );
       
-      allow delete: if isAdmin() && request.auth.token.email != doctorId;
+      allow delete: if isAdmin() && request.auth.token.email.lower() != doctorId.lower();
     }
 
     match /patients/{patientId} {
-      allow get: if isDoctor() && (isAdmin() || existing().created_by == request.auth.token.email);
-      allow list: if isDoctor() && (isAdmin() || resource.data.created_by == request.auth.token.email);
+      allow get: if isDoctor() && (isAdmin() || resource.data.created_by.lower() == request.auth.token.email.lower());
+      allow list: if isDoctor() && (isAdmin() || resource.data.created_by.lower() == request.auth.token.email.lower());
       
-      allow create: if isDoctor() && isValidId(patientId) && isValidPatient(incoming());
+      allow create: if isDoctor() && isValidId(patientId) && isValidPatient(incoming()) && 
+                    incoming().created_by.lower() == request.auth.token.email.lower();
       
       allow update: if isDoctor() && (
-        (isAdmin() || existing().created_by == request.auth.token.email) &&
+        (isAdmin() || existing().created_by.lower() == request.auth.token.email.lower()) &&
         isValidPatient(incoming()) &&
-        incoming().created_by == existing().created_by &&
+        incoming().created_by.lower() == existing().created_by.lower() &&
         incoming().created_at == existing().created_at &&
         (
           // Action: Update Info
@@ -120,7 +122,7 @@ service cloud.firestore {
         )
       );
       
-      allow delete: if isAdmin() || (isDoctor() && existing().created_by == request.auth.token.email);
+      allow delete: if isAdmin() || (isDoctor() && existing().created_by.lower() == request.auth.token.email.lower());
     }
 
     match /patients/{patientId}/visits/{visitId} {
@@ -128,15 +130,16 @@ service cloud.firestore {
         return get(/databases/$(database)/documents/patients/$(patientId)).data;
       }
 
-      allow get: if isDoctor() && (isAdmin() || getPatient().created_by == request.auth.token.email);
-      allow list: if isDoctor() && (isAdmin() || getPatient().created_by == request.auth.token.email);
+      allow get: if isDoctor() && (isAdmin() || getPatient().created_by.lower() == request.auth.token.email.lower());
+      allow list: if isDoctor() && (isAdmin() || getPatient().created_by.lower() == request.auth.token.email.lower());
       
       allow create: if isDoctor() && isValidId(patientId) && isValidId(visitId) &&
-                    (isAdmin() || getPatient().created_by == request.auth.token.email) &&
-                    isValidVisit(incoming());
+                    (isAdmin() || getPatient().created_by.lower() == request.auth.token.email.lower()) &&
+                    isValidVisit(incoming()) &&
+                    incoming().created_by.lower() == request.auth.token.email.lower();
       
       allow update: if false; 
-      allow delete: if isAdmin() || (isDoctor() && getPatient().created_by == request.auth.token.email);
+      allow delete: if isAdmin() || (isDoctor() && getPatient().created_by.lower() == request.auth.token.email.lower());
     }
   }
 }
